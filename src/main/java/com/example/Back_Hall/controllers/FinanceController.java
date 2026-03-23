@@ -5,6 +5,8 @@ import com.example.Back_Hall.model.Finance;
 import com.example.Back_Hall.model.User;
 import com.example.Back_Hall.repositories.FinanceRepository;
 import com.example.Back_Hall.repositories.UserRepository;
+import com.example.Back_Hall.security.JwtUtil;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,29 +24,33 @@ public class FinanceController {
     @Autowired
     UserRepository userRepository;
 
+    @GetMapping("/my")
+    public ResponseEntity getMyFinances(@RequestHeader("Authorization") String  authHeader){
+        String token =  authHeader.replace("Bearer ","");
+        Integer userId = JwtUtil.getUserId(token);
 
-    @GetMapping
-    public ResponseEntity getAllFinances(){
-        return ResponseEntity.ok(financeRepository.findAll());
-    }
-
-    @GetMapping("/user/{id}")
-    public ResponseEntity getByUser(@PathVariable Integer id){
-        if(!userRepository.existsById(id)){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not Found");
+        if(userId == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
-        List<Finance> finance = financeRepository.findByUserId(id);
 
-        return ResponseEntity.ok(finance);
+        return ResponseEntity.ok(financeRepository.findByUserId(userId));
     }
 
 
     @PostMapping
-    public ResponseEntity postFinance(@RequestBody FinanceDto dto){
-        User user = userRepository.findById(dto.userId()).orElse(null);
+    public ResponseEntity postFinance(@RequestHeader("Authorization") String authHeader,@RequestBody FinanceDto dto){
+
+        String token = authHeader.replace("Bearer ","");
+        Integer userId = JwtUtil.getUserId(token);
+        if(userId == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
+
+        User user = userRepository.findById(userId).orElse(null);
         if(user == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
+
         Finance finance = new Finance();
         finance.setProduct(dto.product());
         finance.setValue(dto.value());
@@ -55,13 +61,21 @@ public class FinanceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(financeRepository.save(finance));
     }
 
-    @DeleteMapping("/{financeId}/user/{userid}")
-    public ResponseEntity deleteFinance(@PathVariable Integer userid ,@PathVariable Integer financeId){
-        Finance finance = financeRepository.findById(financeId).orElse(null);
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteFinance(@RequestHeader("Authorization") String authHeader,@PathVariable Integer id){
+        String token = authHeader.replace("Bearer ", "");
+        Integer userId = JwtUtil.getUserId(token);
+
+        if(userId == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
+
+        Finance finance = financeRepository.findById(id).orElse(null);
         if(finance == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Finance not Found");
         }
-        if(!finance.getUser().getId().equals(userid)){
+
+        if(!finance.getUser().getId().equals(userId)){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("This Finance doesn't belong to this user");
         }
         financeRepository.delete(finance);
@@ -69,13 +83,20 @@ public class FinanceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity putFinance(@PathVariable Integer id, @RequestBody FinanceDto dto){
+    public ResponseEntity putFinance(@RequestHeader("Authorization") String authHeader,@PathVariable Integer id, @RequestBody FinanceDto dto){
+        String token = authHeader.replace("Bearer ", "");
+        Integer userId = JwtUtil.getUserId(token);
+
+        if(userId == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+
         Finance finance = financeRepository.findById(id).orElse(null);
         if(finance == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Finance not Found");
         }
 
-        if(!finance.getUser().getId().equals(dto.userId())){
+        if(!finance.getUser().getId().equals(userId)){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("This Finance doesn't belong to this user");
         }
 
