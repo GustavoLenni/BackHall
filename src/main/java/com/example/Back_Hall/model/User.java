@@ -2,7 +2,6 @@ package com.example.Back_Hall.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-
 import java.util.List;
 
 @Entity
@@ -27,7 +26,6 @@ public class User {
         this.password = password;
     }
 
-
     public Integer getId(){
         return id;
     }
@@ -38,15 +36,15 @@ public class User {
         return password;
     }
 
-    public void setEmail(String email){
+    public void changeEmail(String email){
+        if(email == null || email.isBlank()){
+            throw new RuntimeException("Invalid Email");
+        }
         this.email = email;
     }
-    public void setPassword(String password){
+
+    public void changePassword(String password){
         this.password = password;
     }
-
-
-
-
 
 }

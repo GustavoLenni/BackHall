@@ -24,6 +24,7 @@ public class Finance {
     public Finance(){
 
     }
+
     public Finance(String product,Double value,Integer amount,Type type, User user){
         this.product = product;
         this.value = value;
@@ -52,20 +53,19 @@ public class Finance {
     }
 
 
-
-    public void setProduct(String product){
+    public void updateData(String product, Double value,Integer amount, Type type){
+        if(product == null || product.isBlank()){
+            throw new IllegalArgumentException("Invalid product");
+        }
+        if(value == null || value <= 0){
+            throw new IllegalArgumentException("Invalid value");
+        }
+        if(amount == null || amount<= 0){
+            throw new IllegalArgumentException("Invalid amount");
+        }
         this.product = product;
-    }
-    public void setValue(Double value){
         this.value = value;
-    }
-    public void setAmount(Integer amount){
         this.amount = amount;
-    }
-    public void setType(Type type){
         this.type = type;
-    }
-    public void setUser(User user){
-        this.user = user;
     }
 }
