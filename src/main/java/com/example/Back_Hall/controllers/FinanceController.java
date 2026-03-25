@@ -15,7 +15,7 @@ public class FinanceController {
     @Autowired
     FinanceService service;
 
-    @GetMapping("/my")
+    @GetMapping
     public ResponseEntity getMyFinances(@RequestHeader("Authorization") String  authHeader){
         Integer userId = JwtUtil.getUserId(authHeader.replace("Bearer ",""));
         return ResponseEntity.ok(service.getUserFinance(userId));
@@ -38,5 +38,13 @@ public class FinanceController {
     public ResponseEntity putFinance(@RequestHeader("Authorization") String authHeader,@PathVariable Integer id, @RequestBody FinanceDto dto){
         Integer userId = JwtUtil.getUserId(authHeader.replace("Bearer ",""));
         return ResponseEntity.ok(service.updateFinance(userId,id,dto));
+    }
+
+    @DeleteMapping("/all")
+    public ResponseEntity deleteAllMyFinances(@RequestHeader("Authorization") String authHeader){
+        Integer userId = JwtUtil.getUserId(authHeader.replace("Bearer ",""));
+
+        service.deleteAllUserFinances(userId);
+        return ResponseEntity.ok("All your finances are deleted");
     }
 }

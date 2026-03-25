@@ -57,4 +57,8 @@ public class FinanceService {
         );
         return financeRepository.save(finance);
     }
+
+    public void deleteAllUserFinances(Integer userId){
+        financeRepository.deleteByUserId(userId);
+    }
 }
